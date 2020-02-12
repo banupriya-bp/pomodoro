@@ -1,0 +1,24 @@
+* {
+    box-sizing: border-box;
+  }
+  .logo {
+    background: url('freshservice_logo.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    height: 25px;
+    margin-top: 25px;
+  }
+  p{
+      text-align: center;
+  }
+  .add,.show{
+    position: absolute; 
+    left: 20px;
+  }
+  .clear1,.del1
+  {
+    position: absolute; 
+    left: 200px; 
+  }
+  
