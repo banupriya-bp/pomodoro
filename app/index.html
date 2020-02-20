@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=>, initial-scale=1.0">
+    <meta name="viewport" content="width=1.0, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
     <script src="https://static.freshdev.io/fdk/2.0/assets/fresh_client.js"></script>
@@ -15,15 +15,10 @@
     <div class="fw-widget-wrapper">
         <div class="logo"></div>
         <p id="doneBy"></p>
-        <input type=text placeholder="Add To-Do...." id="search"><br><br>
-        <input type="text" id="delete1" placeholder="delete.."><br><br>
-        <button onclick="delete1()" class="del1">delete</button>
-        <button onclick="show_all()" class="show"> show-all</button><br><br>
+        <input type=text placeholder="Add To-Do...." id="search" onclick="this.select()"><br><br>
         <button id="add" class="add" onclick="List_Entry()">Add</button>
         <button id="clear1" class="clear1" onclick="clear1()">Clear-all</button><br><br>
-        <div id="list" style="text-align: center;">
-
-        </div>
+        <button class="show" onclick="show_all()"> show-all</button><br><br>
         </div>
 </body>
 </html>

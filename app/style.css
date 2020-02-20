@@ -13,12 +13,17 @@
       text-align: center;
   }
   .add,.show{
+    background-color:#e7e7e7;
     position: absolute; 
     left: 20px;
   }
-  .clear1,.del1
+  .clear1
   {
+    background-color:#e7e7e7;
     position: absolute; 
     left: 200px; 
   }
+
+
+
   

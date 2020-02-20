@@ -6,26 +6,53 @@ $(document).ready(function() {
       {
         Activation_notify(); 
         logged_In();
+      },function(error){
+        console.error(error);
+        Activation_error();
       });
   },
-function(){
+function(error){
+  console.error(error);
   Initialisation_error();
 });
 });
 
 function clear1()
 {
-  let end=get_end();
-  for(i=1;i<=end;i++)
-  {
-    client.db.delete(i);
-  }
+  client.db.get("end").then(
+    function(data)
+    {
+      let end=data.i;
+      let prom=[];
+      for(j of Array(end).keys())
+      {
+        prom[j]=new Promise((resolve)=>
+        {
+        resolve(client.db.delete(j))
+        });
+      }
+      Promise.all(prom).then(function()
+      {
+        client.db.set("end",{i:0}).then(function(){
+          console.log("successfully cleared the end value");
+        },function(){
+          console.log("end hasnt changed!")
+        });
+        client.interface.trigger("showNotify",{
+          type: "success",
+          message:"cleared!!"
+       })
+      })
+    },function(){
+      console.log("error in getting end in clear-all")
+    })
 }
 function Initiation_notify(){
+  console.log('initiation notification');
   client.interface.trigger("showNotify",{
     type: "success",
     message:"Initiated!!"
- })
+ }).then(console.log).catch(console.error);
 }
 function Activation_notify(){
   client.interface.trigger("showNotify",{
@@ -35,8 +62,7 @@ function Activation_notify(){
 }
 
 function logged_In(){
-  client.data.get('loggedInUser')
-  .then(function() {
+  console.log('logged in');
     client.data.get('loggedInUser')
         .then(function(data) {
             $('#doneBy').text("Todo list created by " + data.loggedInUser.user.name);
@@ -44,8 +70,8 @@ function logged_In(){
         .catch(function(e) {
             console.log('Exception - ', e);
         });
-       });
-      }
+}
+      
 
 function List_blank()
 {
@@ -57,33 +83,45 @@ function List_blank()
 
 function List_Entry()
             {
-              let index;
               let to_do=document.getElementById("search").value;
               document.getElementById("search").value="";
               
               if(to_do)
               {
-                index=get_End();
-                index++;
-                client.db.set(index,{"to_do":to_do,"count":0,"id":index},{setIf: "not_exist"}).then(
+                console.log(to_do);
+                client.db.get("end").then(
+                  function(data)
+                  {
+                    let index;
+                    console.log("Initial value");
+                    index=data.i;
+                    console.log(index);
+                    client.db.set(index,{"to_do":to_do,"count":0,"index":index},).then(
                       function() {
                         client.interface.trigger("showNotify",{
                           type: "success",
                           message:"Saved Successfully!!"
                        })
                         client.db.update("end","increment",{i:1}).then(function(){
-                                console.log(`end:${i}`);
-                        })
-                       }
-                  ,
+                          console.log("Incremented end");
+                        },function(){
+                          console.log("error in incrementing!!")
+                        });
+                        
+                      },function()
+                      {
+                        console.log("error in setting it to db!!")
+                      });
+                    },
                   function()
                   {
+                    console.log("not able to get end!!");
                     client.interface.trigger("showNotify", {
-                      type: "warning",
-                      message: "Already theree!!"
+                      type: "error",
+                      message: "Not Saved!!"
                     })
                   });
-              }
+                }
               else
               List_blank();
             }
@@ -96,90 +134,100 @@ function Initialisation_error()
 });
 }
 
+function Activation_error()
+{
+  client.interface.trigger("showNotify",{
+    type:"error",
+    message:"Activation error"
+});
+}
+
 function delete1(){
-  let end=get_end();
-  let value1= document.getElementById("delete1").value
+  let value= document.getElementById("delete1").value
   document.getElementById("delete1").value="";
-  let matched_id=match(value1);
-  client.db.delete(`${matched_id}`).then (
-    function(data) {
+  client.db.get("end").then(
+    function(data){
+    let matched_id;
+    let end=data.i;
+    let prom=[];
+    let prom1=[];
+    let prom2=[];
+    console.log("while deleting...The last element index is");
+    console.log(end-1);
+    for(i of Array(end).keys())
+    {
+      prom[i]=new Promise((resolve)=>
+      {
+        resolve(client.db.get(i))
+      })
+    }
+    Promise.all(prom).then(function(data)
+    {
       console.log(data);
-    },
-    function(error) {
-      console.log(error);
-   });
+      for(j of Array(end).keys())
+      {
+        if(data[j].to_do===value)
+        {
+          matched_id=data[j].index;
+          console.log(matched_id)
+        }
+      }
+    })  
+    for(let i=0;i<end;i++)
+    {
+      prom1[i]=new Promise((resolve)=>
+      {
+        resolve(client.db.get(i))
+      })
+    }
+    Promise.all(prom1).then(function(data)
+    {
+      for(let i=matched_id;i<end-1;i++)
+      {
+        prom2[i]=new Promise((resolve)=>
+        {
+          resolve(client.db.set(i,{"to_do":data[i+1].to_do,"count":data[i+1].count},{setIf: "exist"}));
+        })
+      }
+
+    });
+    Promise.all(prom2).then(function()
+    {
+      client.db.delete(end-1).then (
+        function() {
+          client.interface.trigger("showNotify",{
+            type: "success",
+            message:"Deleted!!"
+          })
+       },
+        function() {
+          console.log("no such element!!")
+          client.interface.trigger("showNotify",{
+            type:"error",
+            message:"Not Deleted!!"
+        });
+       });
+    });
+    
+},function(){
+  console.log("error in getting end in delete");
+});
 }
 
 function show_all()
-{
+{ 
   client.interface.trigger("showModal", {
-    title:"To_do" ,
+    title:"To_do List" ,
     template: "next.html"
   }).then(function() {
     client.db.get("end").then(function(data)
     {
-       for(let j=1;j<=data.i;i++)
-       {
-         client.db.get(j).then(function(data)
-         {
-           document.getElementById("list").innerHTML+=`${j}: ${data.to_do}<br>`
-         })
-       }
+    },function(){
+      console.log("error in getting end in show-all!!!")
     })
-  }).catch(function() {
-    client.interface.trigger("showNotify",{
-      type:"error",
-      message:"Error:Show_page"
-  }); 
+  },function(error) {
+    console.error(error);
   });
 }
 
-function pomodoro(){
-  let end=get_end();
-  value1=document.getElementById("pomodoro").value;
-  let matched_id=match(value1);
-  client.request.invoke('createSchedule', getScheduleData(matched_id)).then(function() {
-      client.interface.trigger("showNotify",{
-        type:"success",
-        message:"Timer has Started!"
-      })
-    }, function() {
-      client.interface.trigger("showNotify",{
-        type:"error",
-        message:"Oops!! Try Again"
-      })
-      
-  })
-  
-}
 
-function get_End(){
-    client.db.get("end").then(
-    function(data)
-    {
-      return data.i;
-    }
-  )
-}
-
-function match(value){
-for(i=1;i<=end;i++)
-  {
-    client.db.get(i).then(function(data)
-    {
-      if (data.to_do===value)
-      return data.id
-    })
-  }
-}
-
-
-function getScheduleData(matched_id) {
-  const date = new Date();
-  date.setMinutes(date.getMinutes()+Number(25));
-  const scheduleData = {
-    schedule_at: date.toISOString(),
-    id=matched_id
-  };
-  return scheduleData;
-}
