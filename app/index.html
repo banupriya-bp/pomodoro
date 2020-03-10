@@ -15,10 +15,15 @@
     <div class="fw-widget-wrapper">
         <div class="logo"></div>
         <p id="doneBy"></p>
-        <input type=text placeholder="Add To-Do...." id="search" onclick="this.select()"><br><br>
-        <button id="add" class="add" onclick="List_Entry()">Add</button>
-        <button id="clear1" class="clear1" onclick="clear1()">Clear-all</button><br><br>
-        <button class="show" onclick="show_all()"> show-all</button><br><br>
+        <br><br>   
+        <input type=text placeholder="Add To-Do...." id="search" onclick="this.select()" class="search"><br><br><br>
+        <button id="add" class="add" onclick="Add_Item()">Add</button>
+        <button class="show" onclick="show_all()"> show-all</button>
+        <button id="clear1" class="clear1" onclick="clear1()" style="float:right;">Clear-all</button><br><br><br>
+        <details class="summary" ontoggle="summary()">
+        <summary>TASK-SUMMARY</summary><br>
+        <table id="list_summary" class="list_summary"></table>
+        </details>
         </div>
 </body>
 </html>
